@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { FolderOpen } from "lucide-react"
 import { createProject, writeFile, createDirectory } from "@/commands/fs"
 import { getTemplate } from "@/lib/templates"
+import { getProjectScaffoldFiles } from "@/lib/project-scaffold"
 import { TemplatePicker } from "@/components/project/template-picker"
 import type { WikiProject } from "@/types/wiki"
 import { normalizePath } from "@/lib/path-utils"
@@ -65,8 +66,16 @@ export function CreateProjectDialog({ open: isOpen, onOpenChange, onCreated }: C
       const pp = normalizePath(project.path)
 
       const template = getTemplate(selectedTemplate)
-      await writeFile(`${pp}/schema.md`, template.schema)
-      await writeFile(`${pp}/purpose.md`, template.purpose)
+      const pathParts = pp.split("/").filter(Boolean)
+      const projectDirName = pathParts[pathParts.length - 1] ?? name.trim()
+      const scaffoldFiles = getProjectScaffoldFiles(
+        projectDirName,
+        template,
+        pp,
+      )
+      for (const file of scaffoldFiles) {
+        await writeFile(`${pp}/${file.relativePath}`, file.content)
+      }
       for (const dir of template.extraDirs) {
         await createDirectory(`${pp}/${dir}`)
       }

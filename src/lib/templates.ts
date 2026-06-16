@@ -48,12 +48,27 @@ const BASE_INDEX_FORMAT = `\`wiki/index.md\` lists all pages grouped by type. Ea
 - [[page-slug]] — one-line description
 \`\`\``
 
-const BASE_LOG_FORMAT = `\`wiki/log.md\` records activity in reverse chronological order:
-\`\`\`
-## YYYY-MM-DD
+const BASE_RAW_SOURCES = `## Raw Sources
 
-- Action taken / finding noted
-\`\`\``
+- Drop immutable inputs under \`raw/sources/\` (exports, transcripts, clipped articles).
+- Attachments and images under \`raw/assets/\`.
+- LLM reads raw sources but **never modifies** them.`
+
+const BASE_LOG_FORMAT = `\`wiki/log.md\` is append-only. Preferred entry prefix (parseable):
+
+\`\`\`
+## [YYYY-MM-DD] | action | Short title
+
+- Detail bullets
+\`\`\`
+
+Actions: \`setup\`, \`ingest\`, \`document\`, \`investigate\`, \`query\`, \`lint\`, \`reorganize\``
+
+const BASE_OPERATIONS = `## Operations
+
+1. **Ingest** — new source → summary page → update index + log → cross-link related pages
+2. **Query** — ask against wiki; file good answers back as new pages (not chat-only)
+3. **Lint** — orphans, broken wikilinks, index drift, stale claims`
 
 const BASE_CROSSREF = `- Use \`[[page-slug]]\` syntax to link between wiki pages
 - Every entity and concept should appear in \`wiki/index.md\`
@@ -107,6 +122,8 @@ confidence: low | medium | high
 replicated: true | false | null
 \`\`\`
 
+${BASE_RAW_SOURCES}
+
 ## Index Format
 
 ${BASE_INDEX_FORMAT}
@@ -132,6 +149,8 @@ ${BASE_CONTRADICTION}
 - Every finding should assess replication status when known
 - Methodology pages explain the *why* (rationale) not just the *how*
 - Distinguish between direct evidence and inference in finding pages
+
+${BASE_OPERATIONS}
 `,
   purpose: `# Project Purpose — Research Deep-Dive
 
@@ -228,6 +247,8 @@ chapter: N
 pages: "1-24"
 \`\`\`
 
+${BASE_RAW_SOURCES}
+
 ## Index Format
 
 ${BASE_INDEX_FORMAT}
@@ -254,6 +275,8 @@ ${BASE_CONTRADICTION}
 - Theme pages should track *development* across the book, not just state that a theme exists
 - Flag unresolved plot threads with status: \`open\` until resolved
 - Note page numbers for important quotes to enable re-finding later
+
+${BASE_OPERATIONS}
 `,
   purpose: `# Project Purpose — Reading
 
@@ -352,6 +375,8 @@ Reflection pages also include:
 period: weekly | monthly | quarterly | annual
 \`\`\`
 
+${BASE_RAW_SOURCES}
+
 ## Index Format
 
 ${BASE_INDEX_FORMAT}
@@ -378,6 +403,8 @@ ${BASE_CONTRADICTION}
 - Distinguish between outcome goals (what you want) and process goals (what you will do)
 - Reflect on *why* habits succeed or fail, not just whether they did
 - Use the synthesis directory for cross-cutting insights that span multiple goals or periods
+
+${BASE_OPERATIONS}
 `,
   purpose: `# Project Purpose — Personal Growth
 
@@ -436,7 +463,13 @@ const businessTemplate: WikiTemplate = {
   name: "Business",
   description: "Manage meetings, decisions, projects, and stakeholder context for a team",
   icon: "💼",
-  extraDirs: ["wiki/meetings", "wiki/decisions", "wiki/projects", "wiki/stakeholders"],
+  extraDirs: [
+    "wiki/meetings",
+    "wiki/decisions",
+    "wiki/projects",
+    "wiki/stakeholders",
+    "wiki/slides",
+  ],
   schema: `# Wiki Schema — Business / Team
 
 ## Page Types
@@ -446,16 +479,18 @@ const businessTemplate: WikiTemplate = {
 ${BASE_SCHEMA_TYPES}
 | meeting | wiki/meetings/ | Meeting notes, agendas, and action items |
 | decision | wiki/decisions/ | Architectural or strategic decisions (ADR-style) |
-| project | wiki/projects/ | Project briefs, status, and retrospectives |
+| project | wiki/projects/ | Investigations, case studies, feature briefs, retrospectives |
 | stakeholder | wiki/stakeholders/ | People, teams, and organisations involved |
+| slide | wiki/slides/ | Marp slide decks and HTML/PDF exports |
 
 ## Naming Conventions
 
 ${BASE_NAMING}
 - Meetings: \`YYYY-MM-DD-slug.md\` (e.g., \`2024-03-15-sprint-planning.md\`)
 - Decisions: \`NNN-slug.md\` (e.g., \`001-adopt-typescript.md\`)
-- Projects: descriptive slug (e.g., \`payments-redesign.md\`)
+- Projects: descriptive slug + ticket when useful (e.g., \`session-loss-investigation.md\`)
 - Stakeholders: name or team in kebab-case (e.g., \`alice-chen.md\`, \`platform-team.md\`)
+- Slides: \`{project-slug}-slides.md\` (e.g., \`case-study-slides.md\`)
 
 ## Frontmatter
 
@@ -478,11 +513,20 @@ supersedes: ""   # slug of ADR this replaces, if any
 
 Project pages also include:
 \`\`\`yaml
-status: planned | active | on-hold | complete | cancelled
+status: planned | active | on-hold | complete | cancelled | draft | deferred
 owner: ""
+tickets: []   # external tracker keys, e.g. [PROJ-123]
 start_date: YYYY-MM-DD
 target_date: YYYY-MM-DD
 \`\`\`
+
+Slide pages also include:
+\`\`\`yaml
+format: marp
+derived_from: "[[project-slug]]"
+\`\`\`
+
+${BASE_RAW_SOURCES}
 
 ## Index Format
 
@@ -511,6 +555,10 @@ ${BASE_CONTRADICTION}
 - Decision pages capture *context and consequences*, not just the decision itself
 - Deprecated decisions should link to the decision that superseded them
 - Projects should have a retrospective section added on completion
+- Investigations: symptom → root cause → fix plan → status
+- Slide decks link back to source project via \`derived_from\` / \`related:\`
+
+${BASE_OPERATIONS}
 `,
   purpose: `# Project Purpose — Business / Team
 
@@ -518,11 +566,22 @@ ${BASE_CONTRADICTION}
 
 **Organisation / Team:**
 **Domain:**
+**Maintainer:**
 **Time period covered:**
+
+## Goal
+
+<!-- Persistent knowledge base — investigations, decisions, and reference docs maintained with LLM assistance. -->
 
 ## Objectives
 
 <!-- What are the top-level business objectives this wiki supports? -->
+
+1.
+2.
+3.
+
+## Key Questions
 
 1.
 2.
@@ -561,11 +620,19 @@ ${BASE_CONTRADICTION}
 
 -
 
+## Scope
+
+**In scope:**
+-
+
+**Out of scope:**
+-
+
 ## Review Cadence
 
-**Weekly sync notes:**
-**Monthly status update:**
-**Quarterly retrospective:**
+**After each significant deliverable:** ingest → index → log
+**Weekly (optional):** lint pass for orphans and stale claims
+**On request:** export slides / summary from existing pages
 `,
 }
 
@@ -591,6 +658,8 @@ ${BASE_NAMING}
 
 ${BASE_FRONTMATTER}
 
+${BASE_RAW_SOURCES}
+
 ## Index Format
 
 ${BASE_INDEX_FORMAT}
@@ -606,6 +675,8 @@ ${BASE_CROSSREF}
 ## Contradiction Handling
 
 ${BASE_CONTRADICTION}
+
+${BASE_OPERATIONS}
 `,
   purpose: `# Project Purpose
 
