@@ -376,8 +376,8 @@ The original is platform-agnostic (abstract pattern). We handle concrete cross-p
 From this repo you can scaffold a full project (schema, purpose, index, log, agent skills) without the desktop app:
 
 ```bash
-./scripts/new-wiki.sh my-wiki ~/wikis business
-# or: npm run new-wiki -- my-wiki ~/wikis business
+./scripts/new-wiki.sh my-wiki ~/wikis/learning business
+# or: npm run new-wiki -- my-wiki ~/wikis/learning business
 ```
 
 Templates: `general` | `business` | `research` | `reading` | `personal`. See [`project-base/README.md`](project-base/README.md) for the shared layout (same structure as [work-wiki](https://github.com/zohuyhieuzo03/work-wiki) and other instances).

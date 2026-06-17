@@ -30,9 +30,9 @@ This folder documents the **shared layout** used by every wiki instance (includi
 ```bash
 # From llm_wiki repo root
 chmod +x scripts/new-wiki.sh
-./scripts/new-wiki.sh my-wiki ~/wikis business
+./scripts/new-wiki.sh my-wiki ~/wikis/learning business
 
-cd ~/wikis/my-wiki
+cd ~/wikis/learning/my-wiki
 # Edit purpose.md, then open in LLM Wiki app or Cursor
 ```
 
