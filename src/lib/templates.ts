@@ -27,11 +27,15 @@ const BASE_FRONTMATTER = `All pages must include YAML frontmatter:
 \`\`\`yaml
 ---
 type: entity | concept | source | query | comparison | synthesis | overview
+okf_type: Descriptive OKF type     # e.g. Playbook, Reference, VPS Host — see OKF Alignment
 title: Human-readable title
+description: One-line summary      # OKF recommended; used in index previews
 tags: []
 related: []
+resource: ""                       # Canonical URI when the page describes a real asset
 created: YYYY-MM-DD
 updated: YYYY-MM-DD
+timestamp: YYYY-MM-DDTHH:MM:SSZ    # OKF last-modified (ISO 8601); sync with updated
 ---
 \`\`\`
 
@@ -41,7 +45,44 @@ authors: []
 year: YYYY
 url: ""
 venue: ""
-\`\`\``
+\`\`\`
+
+Use \`url\` as \`resource\` when the source has a canonical link.`
+
+const BASE_OKF_ALIGNMENT = `## OKF Alignment (Open Knowledge Format v0.1)
+
+This layout follows the [Open Knowledge Format](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) — Google's vendor-neutral spec for agent-readable markdown wikis (Karpathy LLM-wiki pattern).
+
+**Already conformant:** markdown + YAML frontmatter, \`wiki/\` bundle, \`index.md\` catalog, \`log.md\` history, typed directories.
+
+**Interop fields:**
+
+| Field | Role |
+|-------|------|
+| \`type\` | Routing taxonomy (entity, concept, …) — required by this schema |
+| \`okf_type\` | Descriptive OKF type for external consumers (Playbook, Reference, Metric, …) |
+| \`description\` | One-line summary — OKF recommended |
+| \`resource\` | Canonical URI for the underlying asset |
+| \`timestamp\` | ISO 8601 last-modified — OKF recommended |
+
+**OKF type hints** (pick descriptive \`okf_type\` values):
+
+| Our \`type\` | Example \`okf_type\` |
+|------------|---------------------|
+| entity | VPS Host, Provider, API Endpoint, Dataset |
+| concept | Playbook, Runbook, Technique |
+| source | Reference |
+| query | Open Question |
+| synthesis | Summary |
+| overview | Overview |
+
+**Links:** \`[[wikilinks]]\` remain primary. For OKF export, also accept bundle-relative markdown links: \`[title](/entities/foo.md)\`.
+
+**Citations:** External claims SHOULD end with a \`# Citations\` section (numbered markdown links).
+
+**Bundle version:** Root \`wiki/index.md\` MAY declare \`okf_version: "0.1"\` in YAML frontmatter (only file where index frontmatter is allowed).
+
+Audit: \`python3 ~/wikis/scripts/okf_audit.py <wiki-root>\``
 
 const BASE_INDEX_FORMAT = `\`wiki/index.md\` lists all pages grouped by type. Each entry:
 \`\`\`
@@ -70,10 +111,11 @@ const BASE_OPERATIONS = `## Operations
 2. **Query** — ask against wiki; file good answers back as new pages (not chat-only)
 3. **Lint** — orphans, broken wikilinks, index drift, stale claims`
 
-const BASE_CROSSREF = `- Use \`[[page-slug]]\` syntax to link between wiki pages
+const BASE_CROSSREF = `- Use \`[[page-slug]]\` syntax to link between wiki pages (primary)
+- OKF-compatible alternative: \`[Title](/concepts/page-slug.md)\` (bundle-relative from wiki root)
 - Every entity and concept should appear in \`wiki/index.md\`
 - Queries link to the sources and concepts they draw on
-- Synthesis pages cite all contributing sources via \`related:\``
+- Synthesis pages cite all contributing sources via \`related:\` and \`# Citations\` when external`
 
 const BASE_CONTRADICTION = `When sources contradict each other:
 1. Note the contradiction in the relevant concept or entity page
@@ -149,6 +191,8 @@ ${BASE_CONTRADICTION}
 - Every finding should assess replication status when known
 - Methodology pages explain the *why* (rationale) not just the *how*
 - Distinguish between direct evidence and inference in finding pages
+
+${BASE_OKF_ALIGNMENT}
 
 ${BASE_OPERATIONS}
 `,
@@ -275,6 +319,8 @@ ${BASE_CONTRADICTION}
 - Theme pages should track *development* across the book, not just state that a theme exists
 - Flag unresolved plot threads with status: \`open\` until resolved
 - Note page numbers for important quotes to enable re-finding later
+
+${BASE_OKF_ALIGNMENT}
 
 ${BASE_OPERATIONS}
 `,
@@ -403,6 +449,8 @@ ${BASE_CONTRADICTION}
 - Distinguish between outcome goals (what you want) and process goals (what you will do)
 - Reflect on *why* habits succeed or fail, not just whether they did
 - Use the synthesis directory for cross-cutting insights that span multiple goals or periods
+
+${BASE_OKF_ALIGNMENT}
 
 ${BASE_OPERATIONS}
 `,
@@ -558,6 +606,8 @@ ${BASE_CONTRADICTION}
 - Investigations: symptom → root cause → fix plan → status
 - Slide decks link back to source project via \`derived_from\` / \`related:\`
 
+${BASE_OKF_ALIGNMENT}
+
 ${BASE_OPERATIONS}
 `,
   purpose: `# Project Purpose — Business / Team
@@ -675,6 +725,8 @@ ${BASE_CROSSREF}
 ## Contradiction Handling
 
 ${BASE_CONTRADICTION}
+
+${BASE_OKF_ALIGNMENT}
 
 ${BASE_OPERATIONS}
 `,
