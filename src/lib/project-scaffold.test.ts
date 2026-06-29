@@ -14,14 +14,17 @@ describe("project-scaffold", () => {
     expect(index).toContain("## Decisions")
   })
 
-  it("emits agent skills and readme for new projects", () => {
+  it("emits project-specific agent skills and readme for new projects", () => {
     const template = getTemplate("general")
     const files = getProjectScaffoldFiles("my-wiki", template, "/tmp/my-wiki")
     const paths = files.map((f) => f.relativePath)
-    expect(paths).toContain(".agents/skills/wiki-ingest/SKILL.md")
-    expect(paths).toContain(".agents/skills/wiki-query/SKILL.md")
-    expect(paths).toContain(".agents/skills/wiki-lint/SKILL.md")
+    expect(paths).toContain(".agents/skills/my-wiki-ingest/SKILL.md")
+    expect(paths).toContain(".agents/skills/my-wiki-query/SKILL.md")
+    expect(paths).toContain(".agents/skills/my-wiki-lint/SKILL.md")
     expect(paths).toContain("README.md")
     expect(paths).toContain(".gitignore")
+
+    const ingest = files.find((f) => f.relativePath.endsWith("my-wiki-ingest/SKILL.md"))
+    expect(ingest?.content).toContain("name: my-wiki-ingest")
   })
 })

@@ -137,9 +137,9 @@ export function buildProjectReadme(
     "",
     "| Skill | Invoke when |",
     "|-------|-------------|",
-    "| **wiki-ingest** | Import docs, document investigations, file raw + wiki pages |",
-    "| **wiki-query** | Search wiki markdown, cite paths, file answers to `queries/` / `synthesis/` |",
-    "| **wiki-lint** | Health check — broken links, orphans, stale claims |",
+    `| **${ingestSkillName(projectName)}** | Import docs, document investigations, file raw + wiki pages |`,
+    `| **${querySkillName(projectName)}** | Search wiki markdown, cite paths, file answers to \`queries/\` / \`synthesis/\` |`,
+    `| **${lintSkillName(projectName)}** | Health check — broken links, orphans, stale claims |`,
     "| **llm-wiki** | Optional — LLM Wiki **desktop app** on `:19828` (hybrid search, graph) |",
     "",
     "Filesystem skills work without the desktop app.",
@@ -193,19 +193,31 @@ function todayIso(): string {
   return new Date().toISOString().slice(0, 10)
 }
 
+export function ingestSkillName(projectName: string): string {
+  return `${projectName}-ingest`
+}
+
+export function querySkillName(projectName: string): string {
+  return `${projectName}-query`
+}
+
+export function lintSkillName(projectName: string): string {
+  return `${projectName}-lint`
+}
+
 function getAgentSkillFiles(projectName: string): ProjectScaffoldFile[] {
   const skillRoot = ".agents/skills"
   return [
     {
-      relativePath: `${skillRoot}/wiki-ingest/SKILL.md`,
+      relativePath: `${skillRoot}/${ingestSkillName(projectName)}/SKILL.md`,
       content: buildIngestSkill(projectName),
     },
     {
-      relativePath: `${skillRoot}/wiki-query/SKILL.md`,
+      relativePath: `${skillRoot}/${querySkillName(projectName)}/SKILL.md`,
       content: buildQuerySkill(projectName),
     },
     {
-      relativePath: `${skillRoot}/wiki-lint/SKILL.md`,
+      relativePath: `${skillRoot}/${lintSkillName(projectName)}/SKILL.md`,
       content: buildLintSkill(projectName),
     },
   ]
@@ -213,7 +225,7 @@ function getAgentSkillFiles(projectName: string): ProjectScaffoldFile[] {
 
 function buildIngestSkill(projectName: string): string {
   return `---
-name: wiki-ingest
+name: ${ingestSkillName(projectName)}
 description: >-
   Ingest new sources into the ${projectName} markdown knowledge base. Use when
   the user asks to ingest, import, document, or file knowledge from external docs,
@@ -263,7 +275,7 @@ Read before writing:
 
 function buildQuerySkill(projectName: string): string {
   return `---
-name: wiki-query
+name: ${querySkillName(projectName)}
 description: >-
   Query the ${projectName} markdown knowledge base. Use when the user asks what
   this wiki says about a topic, search the wiki, or ground answers in filed pages.
@@ -292,7 +304,7 @@ description: >-
 
 function buildLintSkill(projectName: string): string {
   return `---
-name: wiki-lint
+name: ${lintSkillName(projectName)}
 description: >-
   Health-check the ${projectName} markdown knowledge base. Use when the user asks
   to lint, audit, or maintain the wiki; check orphan pages, broken wikilinks, or
